@@ -14,13 +14,13 @@ set -x
 exec > >(tee -a /var/log/user-data.log)
 exec 2>&1
 
-# Install Node.js
-curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs
+# Update system
+apt-get update -y
+apt-get install -y nodejs npm
 
 # Buat app folder
-mkdir -p /home/ec2-user/app
-cd /home/ec2-user/app
+mkdir -p /home/ubuntu/app
+cd /home/ubuntu/app
 
 # Buat server.js
 cat > server.js << 'SERVEREOF'
@@ -65,8 +65,8 @@ SERVEREOF
 npm init -y
 npm install @aws-sdk/client-sqs
 
-# Run server in background
-nohup sudo node server.js > /var/log/app.log 2>&1 &
+# Run server with sudo (port 80 butuh root)
+sudo -u root node server.js > /var/log/app.log 2>&1 &
 EOF
 )
 
