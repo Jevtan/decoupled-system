@@ -69,6 +69,7 @@ npm install @aws-sdk/client-sqs
 sudo -u root node server.js > /var/log/app.log 2>&1 &
 EOF
 )
+}
 
 resource "aws_autoscaling_group" "this" {
   name                      = var.asg_name
