@@ -10,63 +10,40 @@ resource "aws_launch_template" "this" {
 
 user_data = base64encode(<<-EOF
 #!/bin/bash
-set -x
-exec > >(tee -a /var/log/user-data.log)
-exec 2>&1
+# Install Node.js 18 via NodeSource
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt-get install -y nodejs
 
-# Update system
-apt-get update -y
-apt-get install -y nodejs npm
-
-# Buat app folder
+# Buat app
 mkdir -p /home/ubuntu/app
 cd /home/ubuntu/app
 
-# Buat server.js
 cat > server.js << 'SERVEREOF'
 const http = require('http');
 const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
-
 const sqs = new SQSClient({ region: 'us-east-1' });
 const QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/788507585127/attendance-queue';
-
 const server = http.createServer(async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  
   if (req.method === 'POST' && req.url === '/register') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
-        await sqs.send(new SendMessageCommand({
-          QueueUrl: QUEUE_URL,
-          MessageBody: body || JSON.stringify({ timestamp: Date.now() })
-        }));
-        res.writeHead(202);
-        res.end(JSON.stringify({ status: 'queued' }));
-      } catch (e) {
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: e.message }));
-      }
+        await sqs.send(new SendMessageCommand({ QueueUrl: QUEUE_URL, MessageBody: body || '{}' }));
+        res.writeHead(202); res.end(JSON.stringify({ status: 'queued' }));
+      } catch(e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); }
     });
   } else if (req.url === '/health') {
-    res.writeHead(200);
-    res.end('OK');
-  } else {
-    res.writeHead(404);
-    res.end('Not found');
-  }
+    res.writeHead(200); res.end('OK');
+  } else { res.writeHead(404); res.end('Not found'); }
 });
-
-server.listen(80, '0.0.0.0', () => console.log('Server running on port 80'));
+server.listen(80, '0.0.0.0', () => console.log('running port 80'));
 SERVEREOF
 
-# Install npm deps
 npm init -y
 npm install @aws-sdk/client-sqs
-
-# Run server with sudo (port 80 butuh root)
-sudo -u root node server.js > /var/log/app.log 2>&1 &
+node server.js > /var/log/app.log 2>&1 &
 EOF
 )
 }

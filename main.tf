@@ -21,7 +21,7 @@ module "asg_queue" {
   scaling_queue_name       = "attendance-queue"
   min_size                 = 1
   max_size                 = 10
-  ami_id                   = "ami-0b6c6ebed2801a5cb"
+  ami_id                   = "ami-0b7bd78b21d85cc3e"
   instance_type            = "t3.medium"
   key_name                 = "my-keypair"
   security_group_ids       = ["sg-0198205ac894f48ec"]
@@ -41,7 +41,7 @@ module "asg_cpu" {
   cpu_scale_in_cooldown   = 600
   min_size                = 1
   max_size                = 10
-  ami_id                  = "ami-0b6c6ebed2801a5cb"
+  ami_id                  = "ami-0b7bd78b21d85cc3e"
   instance_type           = "t3.medium"
   key_name                = "my-keypair"
   security_group_ids      = ["sg-0198205ac894f48ec"]
