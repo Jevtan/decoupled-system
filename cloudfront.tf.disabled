@@ -1,0 +1,4 @@
+module "cloudfront" {
+  source                 = "./modules/cloudfront"
+  s3_website_domain_name = module.s3.website_bucket_domain_name
+}

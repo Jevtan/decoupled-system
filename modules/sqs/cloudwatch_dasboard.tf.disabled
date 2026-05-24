@@ -1,0 +1,112 @@
+# # =========================================================
+# # TAMBAHAN 2: CloudWatch Dashboard untuk Eksperimen Skripsi
+# # Tambahkan sebagai file baru: cloudwatch_dashboard.tf
+# # =========================================================
+# 
+# resource "aws_cloudwatch_dashboard" "experiment_dashboard" {
+#   dashboard_name = "webinar-autoscaling-comparison"
+# 
+#   dashboard_body = jsonencode({
+#     widgets = [
+#       # Widget 1: Queue Length (metrik utama queue-based scaling)
+#       {
+#         type = "metric"
+#         properties = {
+#           title  = "SQS Queue Length - Attendance Queue"
+#           period = 60
+#           stat   = "Average"
+#           metrics = [
+#             ["AWS/SQS", "ApproximateNumberOfMessagesVisible",
+#               "QueueName", "attendance-queue"]
+#           ]
+#           yAxis = { left = { min = 0 } }
+#         }
+#       },
+#       # Widget 2: ASG Instance Count (kedua ASG)
+#       {
+#         type = "metric"
+#         properties = {
+#           title  = "ASG Instance Count Comparison"
+#           period = 60
+#           stat   = "Average"
+#           metrics = [
+#             ["AWS/AutoScaling", "GroupInServiceInstances",
+#               "AutoScalingGroupName", "asg-queue-based", { label = "Queue-Based" }],
+#             ["AWS/AutoScaling", "GroupInServiceInstances",
+#               "AutoScalingGroupName", "asg-cpu-based", { label = "CPU-Based" }]
+#           ]
+#         }
+#       },
+#       # Widget 3: CPU Utilization (untuk CPU-based ASG)
+#       {
+#         type = "metric"
+#         properties = {
+#           title  = "CPU Utilization - CPU-Based ASG"
+#           period = 60
+#           stat   = "Average"
+#           metrics = [
+#             ["AWS/EC2", "CPUUtilization",
+#               "AutoScalingGroupName", "asg-cpu-based"]
+#           ]
+#           annotations = {
+#             horizontal = [
+#               { label = "Scale-Out Threshold (40%)", value = 40, color = "#ff6961" },
+#               { label = "Scale-In Threshold (30%)", value = 30, color = "#77dd77" }
+#             ]
+#           }
+#         }
+#       },
+#       # Widget 4: ALB Response Time (Latency)
+#       {
+#         type = "metric"
+#         properties = {
+#           title  = "ALB Target Response Time (Latency)"
+#           period = 60
+#           stat   = "p95"
+#           metrics = [
+#             ["AWS/ApplicationELB", "TargetResponseTime",
+#               "LoadBalancer", "app/webinar-alb/YOUR-ALB-ID"]
+#           ]
+#           yAxis = { left = { min = 0 } }
+#         }
+#       },
+#       # Widget 5: ALB Request Count (Throughput)
+#       {
+#         type = "metric"
+#         properties = {
+#           title  = "ALB Request Count (Throughput)"
+#           period = 60
+#           stat   = "Sum"
+#           metrics = [
+#             ["AWS/ApplicationELB", "RequestCount",
+#               "LoadBalancer", "app/webinar-alb/YOUR-ALB-ID"]
+#           ]
+#         }
+#       },
+#       # Widget 6: Scaling Events (CloudWatch Alarms state)
+#       {
+#         type = "alarm"
+#         properties = {
+#           title = "Scaling Alarm Status"
+#           alarms = [
+#             "arn:aws:cloudwatch:us-east-1:YOUR_ACCOUNT_ID:alarm:asg-queue-based-queue-scale-out",
+#             "arn:aws:cloudwatch:us-east-1:YOUR_ACCOUNT_ID:alarm:asg-queue-based-queue-scale-in",
+#             "arn:aws:cloudwatch:us-east-1:YOUR_ACCOUNT_ID:alarm:asg-cpu-based-cpu-scale-out",
+#             "arn:aws:cloudwatch:us-east-1:YOUR_ACCOUNT_ID:alarm:asg-cpu-based-cpu-scale-in"
+#           ]
+#         }
+#       }
+#     ]
+#   })
+# }
+# 
+# # CloudWatch Log Group untuk application logs
+# resource "aws_cloudwatch_log_group" "app_logs" {
+#   name              = "/webinar-system/application"
+#   retention_in_days = 7  # Hemat biaya free tier
+# }
+# 
+# resource "aws_cloudwatch_log_group" "worker_logs" {
+#   name              = "/webinar-system/worker"
+#   retention_in_days = 7
+# }
