@@ -1,9 +1,9 @@
 module "alb" {
   source             = "./modules/alb"
   alb_name           = "webinar-alb"
-  vpc_id             = "vpc-0e9d5af7cf72d6a3b"
-  subnet_ids         = ["subnet-0117c22d29b28d4b0", "subnet-0763a20e2d41f384f"]  # 1a dan 1b — 2 AZ berbeda
-  security_group_ids = ["sg-0198205ac894f48ec"]
+  vpc_id          = aws_vpc.main.id    
+  subnet_ids      = [aws_subnet.public_a.id, aws_subnet.public_b.id] # 1a dan 1b — 2 AZ berbeda
+  security_group_ids = [aws_security_group.alb.id]
   target_group_name  = "webinar-target-group"
   listener_port      = 80
   listener_protocol  = "HTTP"
@@ -21,11 +21,11 @@ module "asg_queue" {
   scaling_queue_name       = "attendance-queue"
   min_size                 = 1
   max_size                 = 10
-  ami_id                   = "ami-0b7bd78b21d85cc3e"
+  ami_id                   = "ami-00e1181affe35cfd8"
   instance_type            = "t3.medium"
   key_name                 = "my-keypair"
-  security_group_ids       = ["sg-0198205ac894f48ec"]
-  subnet_ids               = ["subnet-0117c22d29b28d4b0"]  # us-east-1a
+  security_group_ids = [aws_security_group.web_server.id]
+  subnet_ids = [aws_subnet.public_a.id]   # us-east-1a
   target_group_arns        = [module.alb.target_group_arn]
   instance_profile_name    = "LabInstanceProfile"
 }
@@ -41,11 +41,11 @@ module "asg_cpu" {
   cpu_scale_in_cooldown   = 600
   min_size                = 1
   max_size                = 10
-  ami_id                  = "ami-0b7bd78b21d85cc3e"
+  ami_id                  = "ami-00e1181affe35cfd8"
   instance_type           = "t3.medium"
   key_name                = "my-keypair"
-  security_group_ids      = ["sg-0198205ac894f48ec"]
-  subnet_ids              = ["subnet-0117c22d29b28d4b0"]  # us-east-1a
+  security_group_ids = [aws_security_group.web_server.id]
+  subnet_ids = [aws_subnet.public_a.id]   # us-east-1a
   target_group_arns       = [module.alb.target_group_arn]
   instance_profile_name   = "LabInstanceProfile"
 }

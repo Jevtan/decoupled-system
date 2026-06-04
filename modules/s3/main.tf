@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "website" {
-  bucket = "webinar-static-jevin-2026"
+  bucket = "webinar-static-jevin-20260601a"
 
   website {
     index_document = "index.html"
@@ -8,6 +8,6 @@ resource "aws_s3_bucket" "website" {
 }
 
 resource "aws_s3_bucket" "certificate" {
-  bucket = "webinar-certificate-jevin-2026"
+  bucket = "webinar-certificate-jevin-20260601a"
   acl    = "private"
 }
